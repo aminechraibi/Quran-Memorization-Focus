@@ -1,0 +1,6 @@
+{
+  "name": "Quran Memorizer",
+  "description": "Memorize the Holy Quran upon every phone unlock with Al-Hussary recitation, repetition tracking, and offline support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
