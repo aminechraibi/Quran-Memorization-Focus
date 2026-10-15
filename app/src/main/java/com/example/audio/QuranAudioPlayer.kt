@@ -35,9 +35,34 @@ class QuranAudioPlayer(
   private var mediaPlayer: MediaPlayer? = null
   private val scope = CoroutineScope(Dispatchers.Main + Job())
   private var progressTrackerJob: Job? = null
+  private var currentPlaylist: List<Pair<Int, Int>> = emptyList()
+  private var currentPlaylistIndex: Int = 0
+  private var currentReciter: String = "Husary_128kbps"
 
   private val _playerState = MutableStateFlow(AudioPlayerState())
   val playerState: StateFlow<AudioPlayerState> = _playerState.asStateFlow()
+
+  fun playAyahsSequence(ayahs: List<com.example.data.local.AyahEntity>, reciter: String) {
+    if (ayahs.isEmpty()) return
+    currentPlaylist = ayahs.map { it.surahNumber to it.ayahNumberInSurah }
+    currentPlaylistIndex = 0
+    currentReciter = reciter
+    val first = currentPlaylist.first()
+    playAyah(first.first, first.second, reciter)
+  }
+
+  fun togglePlaylist(ayahs: List<com.example.data.local.AyahEntity>, reciter: String) {
+    val state = _playerState.value
+    if (mediaPlayer != null) {
+      if (state.isPlaying) {
+        pause()
+      } else {
+        resume()
+      }
+    } else {
+      playAyahsSequence(ayahs, reciter)
+    }
+  }
 
   fun playAyah(surah: Int, ayah: Int, reciter: String = "Husary_128kbps", directUrl: String? = null) {
     try {
@@ -92,8 +117,14 @@ class QuranAudioPlayer(
           startProgressTracking()
         }
         setOnCompletionListener {
-          _playerState.update { it.copy(isPlaying = false, currentPositionMs = it.durationMs) }
-          stopProgressTracking()
+          if (currentPlaylist.isNotEmpty() && currentPlaylistIndex < currentPlaylist.size - 1) {
+            currentPlaylistIndex++
+            val nextAyah = currentPlaylist[currentPlaylistIndex]
+            playAyah(nextAyah.first, nextAyah.second, currentReciter)
+          } else {
+            _playerState.update { it.copy(isPlaying = false, currentPositionMs = it.durationMs) }
+            stopProgressTracking()
+          }
         }
         setOnErrorListener { _, what, extra ->
           _playerState.update {
@@ -190,13 +221,17 @@ class QuranAudioPlayer(
 
   fun replay() {
     val state = _playerState.value
-    if (mediaPlayer != null) {
+    if (currentPlaylist.isNotEmpty()) {
+      currentPlaylistIndex = 0
+      val first = currentPlaylist.first()
+      playAyah(first.first, first.second, currentReciter)
+    } else if (mediaPlayer != null) {
       seekTo(0)
       mediaPlayer?.start()
       _playerState.update { it.copy(isPlaying = true) }
       startProgressTracking()
     } else if (state.activeSurah > 0 && state.activeAyah > 0) {
-      playAyah(state.activeSurah, state.activeAyah)
+      playAyah(state.activeSurah, state.activeAyah, currentReciter)
     }
   }
 

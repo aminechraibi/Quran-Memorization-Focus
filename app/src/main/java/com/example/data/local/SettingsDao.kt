@@ -47,4 +47,10 @@ interface SettingsDao {
 
   @Query("UPDATE user_settings SET repeatCountGoal = :goal WHERE id = 1")
   suspend fun setRepeatCountGoal(goal: Int)
+
+  @Query("UPDATE user_settings SET versesCount = :count WHERE id = 1")
+  suspend fun setVersesCount(count: Int)
+
+  @Query("UPDATE user_settings SET verseJumpStep = :step WHERE id = 1")
+  suspend fun setVerseJumpStep(step: Int)
 }

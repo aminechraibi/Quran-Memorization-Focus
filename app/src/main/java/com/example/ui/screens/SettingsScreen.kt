@@ -88,6 +88,8 @@ fun SettingsScreen(
   onShowTransliterationChanged: (Boolean) -> Unit,
   onAutoPlayChanged: (Boolean) -> Unit,
   onRepeatGoalChanged: (Int) -> Unit,
+  onVersesCountChanged: (Int) -> Unit = {},
+  onVerseJumpStepChanged: (Int) -> Unit = {},
   onClearCache: () -> Unit,
   onRefreshCache: () -> Unit,
   onLaunchTestUnlock: () -> Unit
@@ -256,6 +258,154 @@ fun SettingsScreen(
                   selectedLabelColor = Color.White
                 )
               )
+            }
+          }
+        }
+      }
+    }
+
+    // Verses Display & Progression Section
+    item {
+      SettingsSectionHeader(title = "Verses Display & Progression", icon = Icons.Default.Tune)
+      Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+      ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+          // Verses count
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                text = "Verses Shown Together",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp
+              )
+              Text(
+                text = "Number of consecutive verses displayed on unlock (1 to 10)",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+              )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              androidx.compose.material3.IconButton(
+                onClick = { if (settings.versesCount > 1) onVersesCountChanged(settings.versesCount - 1) },
+                modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
+              ) {
+                Icon(Icons.Default.Tune, contentDescription = "Decrease", modifier = Modifier.size(16.dp))
+              }
+              Text(
+                text = "${settings.versesCount}",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = EmeraldPrimary,
+                modifier = Modifier.padding(horizontal = 8.dp)
+              )
+              androidx.compose.material3.IconButton(
+                onClick = { if (settings.versesCount < 10) onVersesCountChanged(settings.versesCount + 1) },
+                modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
+              ) {
+                Icon(Icons.Default.Tune, contentDescription = "Increase", modifier = Modifier.size(16.dp))
+              }
+            }
+          }
+
+          Spacer(modifier = Modifier.height(10.dp))
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            listOf(1, 2, 3, 5, 7, 10).forEach { count ->
+              FilterChip(
+                selected = settings.versesCount == count,
+                onClick = { onVersesCountChanged(count) },
+                label = { Text("${count}v", fontSize = 11.sp) },
+                modifier = Modifier.weight(1f),
+                colors = FilterChipDefaults.filterChipColors(
+                  selectedContainerColor = EmeraldPrimary,
+                  selectedLabelColor = Color.White
+                )
+              )
+            }
+          }
+
+          HorizontalDivider(modifier = Modifier.padding(vertical = 14.dp))
+
+          // Progression jump step
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                text = "Progression Jump Step",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp
+              )
+              Text(
+                text = if (settings.versesCount > 1) {
+                  "When clicking Next/Prev or unlocking, advance by this many verses (Max: ${settings.versesCount})"
+                } else {
+                  "Advances by 1 verse on each progression"
+                },
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+              )
+            }
+            if (settings.versesCount > 1) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.IconButton(
+                  onClick = { if (settings.verseJumpStep > 1) onVerseJumpStepChanged(settings.verseJumpStep - 1) },
+                  modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                  Icon(Icons.Default.Tune, contentDescription = "Decrease jump", modifier = Modifier.size(16.dp))
+                }
+                Text(
+                  text = "+${settings.verseJumpStep}",
+                  fontSize = 15.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = EmeraldPrimary,
+                  modifier = Modifier.padding(horizontal = 8.dp)
+                )
+                androidx.compose.material3.IconButton(
+                  onClick = { if (settings.verseJumpStep < settings.versesCount) onVerseJumpStepChanged(settings.verseJumpStep + 1) },
+                  modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                  Icon(Icons.Default.Tune, contentDescription = "Increase jump", modifier = Modifier.size(16.dp))
+                }
+              }
+            }
+          }
+
+          if (settings.versesCount > 1) {
+            Spacer(modifier = Modifier.height(10.dp))
+            val maxChips = minOf(settings.versesCount, 5)
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+              (1..maxChips).forEach { step ->
+                val label = when (step) {
+                  1 -> "1 (Rolling)"
+                  settings.versesCount -> "$step (Next block)"
+                  else -> "Skip $step"
+                }
+                FilterChip(
+                  selected = settings.verseJumpStep == step,
+                  onClick = { onVerseJumpStepChanged(step) },
+                  label = { Text(label, fontSize = 10.sp) },
+                  modifier = Modifier.weight(1f),
+                  colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = EmeraldPrimary,
+                    selectedLabelColor = Color.White
+                  )
+                )
+              }
             }
           }
         }

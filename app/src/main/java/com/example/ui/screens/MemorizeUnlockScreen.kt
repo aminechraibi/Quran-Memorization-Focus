@@ -116,6 +116,7 @@ fun AyahNumberCircle(
 @Composable
 fun MemorizeUnlockScreen(
   ayah: AyahEntity?,
+  ayahs: List<AyahEntity> = emptyList(),
   settings: UserSettingsEntity,
   audioState: AudioPlayerState,
   isTestMode: Boolean = false,
@@ -132,6 +133,11 @@ fun MemorizeUnlockScreen(
   onSeekAudio: (Long) -> Unit,
   onDismiss: () -> Unit
 ) {
+  val displayAyahs = androidx.compose.runtime.remember(ayah, ayahs) {
+    if (ayahs.isNotEmpty()) ayahs else listOfNotNull(ayah)
+  }
+  val primaryAyah = displayAyahs.firstOrNull() ?: ayah
+
   Box(
     modifier = Modifier
       .fillMaxSize()
@@ -159,7 +165,7 @@ fun MemorizeUnlockScreen(
         horizontalAlignment = Alignment.CenterHorizontally
       ) {
         TopUnlockBar(
-          ayah = ayah,
+          ayah = primaryAyah,
           isTestMode = isTestMode,
           fontSize = settings.arabicFontSizeSp,
           onFontSizeChanged = onFontSizeChanged,
@@ -168,13 +174,25 @@ fun MemorizeUnlockScreen(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        if (ayah != null) {
+        if (displayAyahs.isNotEmpty()) {
+          val first = displayAyahs.first()
+          val last = displayAyahs.last()
           Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
           ) {
             // Surah Pill
+            val surahLabel = if (displayAyahs.size > 1) {
+              if (first.surahNumber == last.surahNumber) {
+                "Surah ${first.surahNameEnglish} (${first.surahNameArabic}) • Ayat ${first.ayahNumberInSurah}–${last.ayahNumberInSurah}"
+              } else {
+                "Surah ${first.surahNameEnglish}:${first.ayahNumberInSurah} → ${last.surahNameEnglish}:${last.ayahNumberInSurah}"
+              }
+            } else {
+              "Surah ${first.surahNameEnglish} (${first.surahNameArabic}) • Ayah ${first.ayahNumberInSurah}"
+            }
+
             Row(
               modifier = Modifier
                 .clip(RoundedCornerShape(16.dp))
@@ -184,7 +202,7 @@ fun MemorizeUnlockScreen(
               verticalAlignment = Alignment.CenterVertically
             ) {
               Text(
-                text = "Surah ${ayah.surahNameEnglish} (${ayah.surahNameArabic}) • Ayah ${ayah.ayahNumberInSurah}",
+                text = surahLabel,
                 color = GoldLight,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold
@@ -193,7 +211,7 @@ fun MemorizeUnlockScreen(
 
             // Interactive Repetition Stepper Badge
             RepetitionStepperBadge(
-              currentCount = ayah.repetitionCount,
+              currentCount = first.repetitionCount,
               goal = settings.repeatCountGoal,
               onIncrement = onIncrementRepetition,
               onDecrement = onDecrementRepetition
@@ -201,7 +219,7 @@ fun MemorizeUnlockScreen(
           }
 
           // Bismillah header
-          if (ayah.surahNumber != 9 && ayah.ayahNumberInSurah != 1) {
+          if (first.surahNumber != 9 && first.ayahNumberInSurah != 1) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
               text = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
@@ -214,8 +232,8 @@ fun MemorizeUnlockScreen(
       }
 
       // 2. MIDDLE SECTION: Fits screen and ONLY the Ayah Arabic text scrolls
-      // Ayah number is placed INLINE right next to the last character (not in a new line)!
-      if (ayah != null) {
+      // All verses are rendered consecutively, each followed immediately by its circular medallion at the end on left!
+      if (displayAyahs.isNotEmpty()) {
         Card(
           modifier = Modifier
             .weight(1f)
@@ -236,18 +254,21 @@ fun MemorizeUnlockScreen(
               .padding(horizontal = 20.dp, vertical = 16.dp),
             contentAlignment = Alignment.Center
           ) {
-            val cleanArabicText = ayah.textArabic.replace("۝", "").trim()
-            val inlineNumberId = "inline_ayah_number"
-
             val annotatedString = buildAnnotatedString {
-              append(cleanArabicText)
-              append("\u200F\u00A0")
-              appendInlineContent(inlineNumberId, "\u200F[${ayah.ayahNumberInSurah}]\u200F")
+              displayAyahs.forEachIndexed { index, itemAyah ->
+                val cleanArabicText = itemAyah.textArabic.replace("۝", "").trim()
+                append(cleanArabicText)
+                append("\u200F\u00A0")
+                appendInlineContent("inline_ayah_number_${itemAyah.id}", "\u200F[${itemAyah.ayahNumberInSurah}]\u200F")
+                if (index < displayAyahs.size - 1) {
+                  append(" \u200F")
+                }
+              }
             }
 
             val badgeSize = (settings.arabicFontSizeSp * 1.30f).dp
-            val inlineContentMap = mapOf(
-              inlineNumberId to InlineTextContent(
+            val inlineContentMap = displayAyahs.associate { itemAyah ->
+              "inline_ayah_number_${itemAyah.id}" to InlineTextContent(
                 Placeholder(
                   width = (settings.arabicFontSizeSp * 1.35f).sp,
                   height = (settings.arabicFontSizeSp * 1.35f).sp,
@@ -255,12 +276,12 @@ fun MemorizeUnlockScreen(
                 )
               ) {
                 AyahNumberCircle(
-                  number = ayah.ayahNumberInSurah,
+                  number = itemAyah.ayahNumberInSurah,
                   size = badgeSize,
                   modifier = Modifier.testTag("ayah_number_circle")
                 )
               }
-            )
+            }
 
             androidx.compose.runtime.CompositionLocalProvider(
               androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Rtl
@@ -325,12 +346,12 @@ fun MemorizeUnlockScreen(
           ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Ayah", modifier = Modifier.size(14.dp))
             Spacer(modifier = Modifier.width(4.dp))
-            Text("Previous", fontSize = 12.sp)
+            Text(if (settings.verseJumpStep > 1) "Prev (-${settings.verseJumpStep})" else "Previous", fontSize = 12.sp)
           }
 
           Text(
-            text = "Hifz • حفظ",
-            color = GoldLight.copy(alpha = 0.6f),
+            text = "Hifz • ${settings.versesCount} ${if (settings.versesCount == 1) "Ayah" else "Ayat"}",
+            color = GoldLight.copy(alpha = 0.65f),
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold
           )
@@ -344,7 +365,7 @@ fun MemorizeUnlockScreen(
             ),
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
           ) {
-            Text("Next", fontSize = 12.sp)
+            Text(if (settings.verseJumpStep > 1) "Next (+${settings.verseJumpStep})" else "Next", fontSize = 12.sp)
             Spacer(modifier = Modifier.width(4.dp))
             Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Ayah", modifier = Modifier.size(14.dp))
           }

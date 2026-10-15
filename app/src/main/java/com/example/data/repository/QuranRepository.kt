@@ -49,10 +49,18 @@ class QuranRepository(
     quranDao.getAyahsRange(startId, endId)
 
   suspend fun markDoneAndAdvance(currentAyahId: Int): Int = withContext(Dispatchers.IO) {
-    quranDao.setAyahCompleted(currentAyahId, true)
+    val settings = settingsDao.getSettingsSync()
+    val jumpStep = settings?.verseJumpStep?.coerceAtLeast(1) ?: 1
+    val versesCount = settings?.versesCount?.coerceIn(1, 10) ?: 1
 
-    // Calculate next available ayah
-    val nextAyahId = calculateNextAyahId(currentAyahId)
+    // Mark current group of verses as completed
+    for (i in 0 until versesCount) {
+      val aId = (currentAyahId + i).coerceAtMost(6236)
+      quranDao.setAyahCompleted(aId, true)
+    }
+
+    // Calculate next starting ayah advancing by jumpStep
+    val nextAyahId = (currentAyahId + jumpStep).coerceAtMost(6236)
     settingsDao.updateCurrentAyahId(nextAyahId)
 
     // Automatically trigger cache for next window
@@ -116,6 +124,35 @@ class QuranRepository(
 
   suspend fun setRepeatCountGoal(goal: Int) = withContext(Dispatchers.IO) {
     settingsDao.setRepeatCountGoal(goal)
+  }
+
+  suspend fun setVersesCount(count: Int) = withContext(Dispatchers.IO) {
+    val clampedCount = count.coerceIn(1, 10)
+    settingsDao.setVersesCount(clampedCount)
+    val settings = settingsDao.getSettingsSync()
+    if (settings != null && settings.verseJumpStep > clampedCount) {
+      settingsDao.setVerseJumpStep(clampedCount)
+    }
+  }
+
+  suspend fun setVerseJumpStep(step: Int) = withContext(Dispatchers.IO) {
+    val settings = settingsDao.getSettingsSync()
+    val maxStep = settings?.versesCount?.coerceIn(1, 10) ?: 10
+    val clampedStep = step.coerceIn(1, maxStep)
+    settingsDao.setVerseJumpStep(clampedStep)
+  }
+
+  suspend fun getAyahsBlock(startAyahId: Int, count: Int): List<AyahEntity> = withContext(Dispatchers.IO) {
+    val result = mutableListOf<AyahEntity>()
+    val safeCount = count.coerceIn(1, 10)
+    for (i in 0 until safeCount) {
+      val targetId = (startAyahId + i).coerceAtMost(6236)
+      val ayah = getAyahByIdSync(targetId) ?: getAyahOrFallback(targetId)
+      if (ayah != null && !result.any { it.id == ayah.id }) {
+        result.add(ayah)
+      }
+    }
+    result
   }
 
   suspend fun recordUnlockTriggered() = withContext(Dispatchers.IO) {

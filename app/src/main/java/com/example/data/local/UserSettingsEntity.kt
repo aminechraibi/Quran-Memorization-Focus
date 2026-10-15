@@ -17,5 +17,7 @@ data class UserSettingsEntity(
   val showTransliteration: Boolean = false,
   val repeatCountGoal: Int = 5,
   val offlineAudioCacheEnabled: Boolean = true,
-  val themeDimMode: Boolean = false
+  val themeDimMode: Boolean = false,
+  val versesCount: Int = 1, // Number of verses shown: 1 to 10, default 1
+  val verseJumpStep: Int = 1 // Progression jump stride: 1 to versesCount, default 1
 )

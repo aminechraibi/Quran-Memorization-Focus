@@ -99,6 +99,8 @@ fun HomeScreen(
   onReciterChanged: (String) -> Unit,
   onAudioSpeedChanged: (Float) -> Unit,
   onAutoPlayChanged: (Boolean) -> Unit,
+  onVersesCountChanged: (Int) -> Unit = {},
+  onVerseJumpStepChanged: (Int) -> Unit = {},
   onNavigateToSurahs: () -> Unit = {}
 ) {
   val currentAyah = uiState.currentAyah
@@ -134,25 +136,36 @@ fun HomeScreen(
       SurahAndAyahSelectorCard(
         surahInfo = currentSurahInfo,
         ayahNumber = activeAyahNumber,
+        settings = settings,
         totalRepetitions = currentAyah?.repetitionCount ?: 0,
         repeatGoal = settings.repeatCountGoal,
         onOpenSurahDialog = { showSurahDialog = true },
         onOpenAyahJumpDialog = { showAyahJumpDialog = true },
         onPreviousAyah = {
-          if (activeAyahNumber > 1) {
-            onSelectSurahAndAyah(activeSurahNumber, activeAyahNumber - 1)
+          val jump = settings.verseJumpStep.coerceAtLeast(1)
+          if (activeAyahNumber > jump) {
+            onSelectSurahAndAyah(activeSurahNumber, activeAyahNumber - jump)
           } else if (activeSurahNumber > 1) {
             val prevSurah = QuranSurahDirectory.getSurahByNumber(activeSurahNumber - 1)
             if (prevSurah != null) {
-              onSelectSurahAndAyah(prevSurah.number, prevSurah.numberOfAyahs)
+              val targetAyah = (prevSurah.numberOfAyahs - (jump - activeAyahNumber)).coerceIn(1, prevSurah.numberOfAyahs)
+              onSelectSurahAndAyah(prevSurah.number, targetAyah)
             }
+          } else {
+            onSelectSurahAndAyah(1, 1)
           }
         },
         onNextAyah = {
-          if (activeAyahNumber < currentSurahInfo.numberOfAyahs) {
-            onSelectSurahAndAyah(activeSurahNumber, activeAyahNumber + 1)
+          val jump = settings.verseJumpStep.coerceAtLeast(1)
+          if (activeAyahNumber + jump <= currentSurahInfo.numberOfAyahs) {
+            onSelectSurahAndAyah(activeSurahNumber, activeAyahNumber + jump)
           } else if (activeSurahNumber < 114) {
-            onSelectSurahAndAyah(activeSurahNumber + 1, 1)
+            val nextSurah = QuranSurahDirectory.getSurahByNumber(activeSurahNumber + 1)
+            if (nextSurah != null) {
+              val overflow = (activeAyahNumber + jump) - currentSurahInfo.numberOfAyahs
+              val targetAyah = overflow.coerceIn(1, nextSurah.numberOfAyahs)
+              onSelectSurahAndAyah(nextSurah.number, targetAyah)
+            }
           }
         }
       )
@@ -168,7 +181,9 @@ fun HomeScreen(
         onFontSizeChanged = onFontSizeChanged,
         onReciterChanged = onReciterChanged,
         onAudioSpeedChanged = onAudioSpeedChanged,
-        onAutoPlayChanged = onAutoPlayChanged
+        onAutoPlayChanged = onAutoPlayChanged,
+        onVersesCountChanged = onVersesCountChanged,
+        onVerseJumpStepChanged = onVerseJumpStepChanged
       )
     }
 
@@ -346,6 +361,7 @@ private fun HeroLaunchCard(
 private fun SurahAndAyahSelectorCard(
   surahInfo: SurahInfo,
   ayahNumber: Int,
+  settings: com.example.data.local.UserSettingsEntity,
   totalRepetitions: Int,
   repeatGoal: Int,
   onOpenSurahDialog: () -> Unit,
@@ -494,14 +510,21 @@ private fun SurahAndAyahSelectorCard(
             modifier = Modifier.padding(vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
           ) {
+            val verseText = if (settings.versesCount > 1) {
+              val endAyah = minOf(surahInfo.numberOfAyahs, ayahNumber + settings.versesCount - 1)
+              "Ayat $ayahNumber–$endAyah (${settings.versesCount} verses shown)"
+            } else {
+              "Ayah $ayahNumber of ${surahInfo.numberOfAyahs}"
+            }
             Text(
-              text = "Ayah $ayahNumber of ${surahInfo.numberOfAyahs}",
-              fontSize = 15.sp,
+              text = verseText,
+              fontSize = if (settings.versesCount > 1) 13.sp else 15.sp,
               fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onSurface
+              color = MaterialTheme.colorScheme.onSurface,
+              textAlign = TextAlign.Center
             )
             Text(
-              text = "Tap to jump",
+              text = if (settings.verseJumpStep > 1) "Jump step: +${settings.verseJumpStep} • Tap to jump" else "Tap to jump",
               fontSize = 11.sp,
               color = GoldDark,
               fontWeight = FontWeight.Medium
@@ -538,7 +561,9 @@ private fun EssentialConfigsCard(
   onFontSizeChanged: (Int) -> Unit,
   onReciterChanged: (String) -> Unit,
   onAudioSpeedChanged: (Float) -> Unit,
-  onAutoPlayChanged: (Boolean) -> Unit
+  onAutoPlayChanged: (Boolean) -> Unit,
+  onVersesCountChanged: (Int) -> Unit = {},
+  onVerseJumpStepChanged: (Int) -> Unit = {}
 ) {
   Card(
     modifier = Modifier.fillMaxWidth(),
@@ -603,6 +628,177 @@ private fun EssentialConfigsCard(
             checkedTrackColor = EmeraldPrimary
           )
         )
+      }
+
+      HorizontalDivider(
+        modifier = Modifier.padding(vertical = 14.dp),
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+      )
+
+      // 2. VERSES DISPLAYED AT ONCE (Default 1, Min 1, Max 10)
+      Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = "Verses Displayed at Once",
+              fontSize = 14.sp,
+              fontWeight = FontWeight.SemiBold,
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+              text = "Consecutive verses shown together (1 to 10)",
+              fontSize = 11.sp,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
+
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            IconButton(
+              onClick = { if (settings.versesCount > 1) onVersesCountChanged(settings.versesCount - 1) },
+              modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+              Icon(Icons.Default.Remove, contentDescription = "Decrease verses", modifier = Modifier.size(16.dp))
+            }
+            Text(
+              text = "${settings.versesCount}",
+              fontSize = 16.sp,
+              fontWeight = FontWeight.Bold,
+              color = EmeraldPrimary,
+              modifier = Modifier.padding(horizontal = 6.dp)
+            )
+            IconButton(
+              onClick = { if (settings.versesCount < 10) onVersesCountChanged(settings.versesCount + 1) },
+              modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+              Icon(Icons.Default.Add, contentDescription = "Increase verses", modifier = Modifier.size(16.dp))
+            }
+          }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+          listOf(1, 2, 3, 5, 7, 10).forEach { count ->
+            val isSelected = settings.versesCount == count
+            FilterChip(
+              selected = isSelected,
+              onClick = { onVersesCountChanged(count) },
+              label = { Text("${count}v", fontSize = 11.sp) },
+              modifier = Modifier.weight(1f),
+              colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = EmeraldPrimary,
+                selectedLabelColor = Color.White
+              )
+            )
+          }
+        }
+      }
+
+      HorizontalDivider(
+        modifier = Modifier.padding(vertical = 14.dp),
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+      )
+
+      // 3. PROGRESSION JUMP / SKIP STEP (1 to versesCount)
+      Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Column(modifier = Modifier.weight(1f)) {
+            Text(
+              text = "Progression Jump Step",
+              fontSize = 14.sp,
+              fontWeight = FontWeight.SemiBold,
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+              text = if (settings.versesCount > 1) {
+                "Advance by up to ${settings.versesCount} verses on Next/Prev or unlock"
+              } else {
+                "Advances by 1 verse on each progression"
+              },
+              fontSize = 11.sp,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+          }
+
+          if (settings.versesCount > 1) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+              IconButton(
+                onClick = { if (settings.verseJumpStep > 1) onVerseJumpStepChanged(settings.verseJumpStep - 1) },
+                modifier = Modifier
+                  .size(32.dp)
+                  .clip(CircleShape)
+                  .background(MaterialTheme.colorScheme.surfaceVariant)
+              ) {
+                Icon(Icons.Default.Remove, contentDescription = "Decrease jump", modifier = Modifier.size(16.dp))
+              }
+              Text(
+                text = "+${settings.verseJumpStep}",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = GoldDark,
+                modifier = Modifier.padding(horizontal = 6.dp)
+              )
+              IconButton(
+                onClick = { if (settings.verseJumpStep < settings.versesCount) onVerseJumpStepChanged(settings.verseJumpStep + 1) },
+                modifier = Modifier
+                  .size(32.dp)
+                  .clip(CircleShape)
+                  .background(MaterialTheme.colorScheme.surfaceVariant)
+              ) {
+                Icon(Icons.Default.Add, contentDescription = "Increase jump", modifier = Modifier.size(16.dp))
+              }
+            }
+          }
+        }
+
+        if (settings.versesCount > 1) {
+          Spacer(modifier = Modifier.height(8.dp))
+          val maxChips = minOf(settings.versesCount, 5)
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            (1..maxChips).forEach { step ->
+              val isSelected = settings.verseJumpStep == step
+              val label = when (step) {
+                1 -> "1 (Rolling)"
+                settings.versesCount -> "$step (Next $step)"
+                else -> "Skip $step"
+              }
+              FilterChip(
+                selected = isSelected,
+                onClick = { onVerseJumpStepChanged(step) },
+                label = { Text(label, fontSize = 10.sp) },
+                modifier = Modifier.weight(1f),
+                colors = FilterChipDefaults.filterChipColors(
+                  selectedContainerColor = GoldDark,
+                  selectedLabelColor = Color.White
+                )
+              )
+            }
+          }
+        }
       }
 
       HorizontalDivider(

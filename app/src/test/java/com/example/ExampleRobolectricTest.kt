@@ -95,5 +95,15 @@ class ExampleRobolectricTest {
     settingsDao.updateCurrentAyahId(6)
     val updated = settingsDao.getSettingsSync()
     assertEquals(6, updated?.currentAyahId)
+
+    // Test versesCount and verseJumpStep
+    assertEquals(1, updated?.versesCount)
+    assertEquals(1, updated?.verseJumpStep)
+
+    settingsDao.setVersesCount(3)
+    settingsDao.setVerseJumpStep(2)
+    val multiSettings = settingsDao.getSettingsSync()
+    assertEquals(3, multiSettings?.versesCount)
+    assertEquals(2, multiSettings?.verseJumpStep)
   }
 }

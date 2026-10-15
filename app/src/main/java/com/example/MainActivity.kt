@@ -161,6 +161,8 @@ fun QuranAppContent(viewModel: QuranViewModel) {
             onReciterChanged = { viewModel.setSelectedReciter(it) },
             onAudioSpeedChanged = { viewModel.setAudioSpeed(it) },
             onAutoPlayChanged = { viewModel.setAutoPlay(it) },
+            onVersesCountChanged = { viewModel.setVersesCount(it) },
+            onVerseJumpStepChanged = { viewModel.setVerseJumpStep(it) },
             onNavigateToSurahs = { currentTab = 1 }
           )
 
@@ -199,6 +201,8 @@ fun QuranAppContent(viewModel: QuranViewModel) {
             onShowTransliterationChanged = { viewModel.setShowTransliteration(it) },
             onAutoPlayChanged = { viewModel.setAutoPlay(it) },
             onRepeatGoalChanged = { viewModel.setRepeatCountGoal(it) },
+            onVersesCountChanged = { viewModel.setVersesCount(it) },
+            onVerseJumpStepChanged = { viewModel.setVerseJumpStep(it) },
             onClearCache = { viewModel.clearAudioCache() },
             onRefreshCache = { viewModel.refreshCacheInfo() },
             onLaunchTestUnlock = { isTestModeActive = true }
@@ -215,6 +219,7 @@ fun QuranAppContent(viewModel: QuranViewModel) {
     ) {
       MemorizeUnlockScreen(
         ayah = uiState.currentAyah,
+        ayahs = uiState.currentAyahs,
         settings = uiState.settings,
         audioState = uiState.audioState,
         isTestMode = true,

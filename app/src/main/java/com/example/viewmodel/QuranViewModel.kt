@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 
 data class QuranUiState(
   val currentAyah: AyahEntity? = null,
+  val currentAyahs: List<AyahEntity> = emptyList(),
   val settings: UserSettingsEntity = UserSettingsEntity(),
   val completedCount: Int = 0,
   val totalRepetitions: Int = 0,
@@ -42,6 +43,7 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
   private val _uiState = MutableStateFlow(
     QuranUiState(
       currentAyah = QuranSeedData.initialAyahs.first(),
+      currentAyahs = listOf(QuranSeedData.initialAyahs.first()),
       selectedSurahAyahs = QuranSeedData.initialAyahs.filter { it.surahNumber == 1 }
     )
   )
@@ -53,11 +55,19 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
     viewModelScope.launch {
       repository.settingsFlow.collect { settings ->
         val safeSettings = settings ?: UserSettingsEntity()
-        val currAyah = repository.getAyahByIdSync(safeSettings.currentAyahId)
-          ?: QuranSeedData.initialAyahs.firstOrNull { it.id == safeSettings.currentAyahId }
+        val count = safeSettings.versesCount.coerceIn(1, 10)
+        val ayahsList = repository.getAyahsBlock(safeSettings.currentAyahId, count)
+        val currAyah = ayahsList.firstOrNull()
+          ?: repository.getAyahByIdSync(safeSettings.currentAyahId)
           ?: QuranSeedData.initialAyahs.first()
 
-        _uiState.update { it.copy(settings = safeSettings, currentAyah = currAyah) }
+        _uiState.update {
+          it.copy(
+            settings = safeSettings,
+            currentAyah = currAyah,
+            currentAyahs = ayahsList
+          )
+        }
       }
     }
 
@@ -97,8 +107,14 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
       val state = uiState.value
       val currentId = state.settings.currentAyahId
       val nextId = repository.markDoneAndAdvance(currentId)
-      val nextAyah = repository.getAyahByIdSync(nextId)
-      _uiState.update { it.copy(currentAyah = nextAyah) }
+      val count = state.settings.versesCount.coerceIn(1, 10)
+      val nextAyahs = repository.getAyahsBlock(nextId, count)
+      _uiState.update {
+        it.copy(
+          currentAyah = nextAyahs.firstOrNull(),
+          currentAyahs = nextAyahs
+        )
+      }
       audioPlayer.pause()
       onDismiss()
     }
@@ -107,10 +123,18 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
   fun onRepeatClicked(onDismiss: () -> Unit) {
     viewModelScope.launch {
       val state = uiState.value
-      val currentId = state.settings.currentAyahId
-      repository.repeatAyah(currentId)
-      val updatedAyah = repository.getAyahByIdSync(currentId)
-      _uiState.update { it.copy(currentAyah = updatedAyah) }
+      val ayahs = if (state.currentAyahs.isNotEmpty()) state.currentAyahs else listOfNotNull(state.currentAyah)
+      for (a in ayahs) {
+        repository.repeatAyah(a.id)
+      }
+      val count = state.settings.versesCount.coerceIn(1, 10)
+      val updatedAyahs = repository.getAyahsBlock(state.settings.currentAyahId, count)
+      _uiState.update {
+        it.copy(
+          currentAyah = updatedAyahs.firstOrNull(),
+          currentAyahs = updatedAyahs
+        )
+      }
       audioPlayer.pause()
       onDismiss()
     }
@@ -119,10 +143,17 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
   fun nextAyah() {
     viewModelScope.launch {
       val state = uiState.value
-      val nextId = (state.settings.currentAyahId + 1).coerceAtMost(6236)
+      val jump = state.settings.verseJumpStep.coerceAtLeast(1)
+      val nextId = (state.settings.currentAyahId + jump).coerceAtMost(6236)
       repository.setCurrentAyah(nextId)
-      val ayah = repository.getAyahByIdSync(nextId)
-      _uiState.update { it.copy(currentAyah = ayah) }
+      val count = state.settings.versesCount.coerceIn(1, 10)
+      val ayahs = repository.getAyahsBlock(nextId, count)
+      _uiState.update {
+        it.copy(
+          currentAyah = ayahs.firstOrNull(),
+          currentAyahs = ayahs
+        )
+      }
       audioPlayer.pause()
     }
   }
@@ -130,10 +161,17 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
   fun previousAyah() {
     viewModelScope.launch {
       val state = uiState.value
-      val prevId = (state.settings.currentAyahId - 1).coerceAtLeast(1)
+      val jump = state.settings.verseJumpStep.coerceAtLeast(1)
+      val prevId = (state.settings.currentAyahId - jump).coerceAtLeast(1)
       repository.setCurrentAyah(prevId)
-      val ayah = repository.getAyahByIdSync(prevId)
-      _uiState.update { it.copy(currentAyah = ayah) }
+      val count = state.settings.versesCount.coerceIn(1, 10)
+      val ayahs = repository.getAyahsBlock(prevId, count)
+      _uiState.update {
+        it.copy(
+          currentAyah = ayahs.firstOrNull(),
+          currentAyahs = ayahs
+        )
+      }
       audioPlayer.pause()
     }
   }
@@ -141,10 +179,13 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
   fun selectAyahToMemorize(ayahId: Int) {
     viewModelScope.launch {
       repository.setCurrentAyah(ayahId)
-      val ayah = repository.getAyahByIdSync(ayahId) ?: repository.getAyahOrFallback(ayahId)
+      val count = uiState.value.settings.versesCount.coerceIn(1, 10)
+      val ayahs = repository.getAyahsBlock(ayahId, count)
+      val ayah = ayahs.firstOrNull() ?: repository.getAyahOrFallback(ayahId)
       _uiState.update {
         it.copy(
           currentAyah = ayah,
+          currentAyahs = ayahs,
           userMessage = "Active Ayah set to Ayah $ayahId"
         )
       }
@@ -157,10 +198,13 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
     val globalId = QuranSurahDirectory.getGlobalAyahId(surahNumber, clampedAyah)
     viewModelScope.launch {
       repository.setCurrentAyah(globalId)
-      val ayah = repository.getAyahByIdSync(globalId) ?: repository.getAyahOrFallback(globalId)
+      val count = uiState.value.settings.versesCount.coerceIn(1, 10)
+      val ayahs = repository.getAyahsBlock(globalId, count)
+      val ayah = ayahs.firstOrNull() ?: repository.getAyahOrFallback(globalId)
       _uiState.update {
         it.copy(
           currentAyah = ayah,
+          currentAyahs = ayahs,
           userMessage = "Selected Surah ${surahInfo.nameEnglish} (${surahInfo.nameArabic}) : Ayah $clampedAyah"
         )
       }
@@ -171,9 +215,14 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
   }
 
   fun toggleAudioPlayback(ayah: AyahEntity? = null) {
-    val targetAyah = ayah ?: uiState.value.currentAyah ?: return
     val reciter = uiState.value.settings.selectedReciter
-    audioPlayer.togglePlayPause(targetAyah.surahNumber, targetAyah.ayahNumberInSurah, reciter)
+    val currentAyahs = uiState.value.currentAyahs
+    if (ayah == null && currentAyahs.size > 1) {
+      audioPlayer.togglePlaylist(currentAyahs, reciter)
+    } else {
+      val targetAyah = ayah ?: uiState.value.currentAyah ?: return
+      audioPlayer.togglePlayPause(targetAyah.surahNumber, targetAyah.ayahNumberInSurah, reciter)
+    }
   }
 
   fun replayAudio() {
@@ -270,6 +319,33 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
   fun setRepeatCountGoal(goal: Int) {
     viewModelScope.launch {
       repository.setRepeatCountGoal(goal)
+    }
+  }
+
+  fun setVersesCount(count: Int) {
+    viewModelScope.launch {
+      val clamped = count.coerceIn(1, 10)
+      repository.setVersesCount(clamped)
+      val currentId = uiState.value.settings.currentAyahId
+      val ayahs = repository.getAyahsBlock(currentId, clamped)
+      _uiState.update {
+        it.copy(
+          currentAyahs = ayahs,
+          currentAyah = ayahs.firstOrNull(),
+          userMessage = "Displaying $clamped ${if (clamped == 1) "verse" else "verses"} at once"
+        )
+      }
+    }
+  }
+
+  fun setVerseJumpStep(step: Int) {
+    viewModelScope.launch {
+      val maxStep = uiState.value.settings.versesCount.coerceIn(1, 10)
+      val clamped = step.coerceIn(1, maxStep)
+      repository.setVerseJumpStep(clamped)
+      _uiState.update {
+        it.copy(userMessage = "Jump progression step set to $clamped ${if (clamped == 1) "verse" else "verses"}")
+      }
     }
   }
 

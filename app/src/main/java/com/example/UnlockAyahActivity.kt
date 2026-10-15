@@ -29,6 +29,7 @@ class UnlockAyahActivity : ComponentActivity() {
 
         MemorizeUnlockScreen(
           ayah = uiState.currentAyah,
+          ayahs = uiState.currentAyahs,
           settings = uiState.settings,
           audioState = uiState.audioState,
           isTestMode = false,
