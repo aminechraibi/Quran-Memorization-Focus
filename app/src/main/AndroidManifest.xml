@@ -38,7 +38,8 @@
         <activity
             android:name=".UnlockAyahActivity"
             android:exported="false"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
+            android:taskAffinity="com.example.unlockactivity"
             android:excludeFromRecents="true"
             android:showWhenLocked="true"
             android:turnScreenOn="true"

@@ -14,6 +14,10 @@ import com.example.ui.screens.MemorizeUnlockScreen
 import com.example.ui.theme.QuranMemorizerTheme
 import com.example.viewmodel.QuranViewModel
 
+import android.app.NotificationManager
+import androidx.activity.compose.BackHandler
+import com.example.service.UnlockMonitorService
+
 class UnlockAyahActivity : ComponentActivity() {
 
   private val viewModel: QuranViewModel by viewModels()
@@ -21,9 +25,19 @@ class UnlockAyahActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
+    // Clear alert notification if it was shown
+    try {
+      val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+      notificationManager?.cancel(UnlockMonitorService.NOTIFICATION_ID_ALERT)
+    } catch (_: Exception) {}
+
     configureShowOnLockScreen()
 
     setContent {
+      BackHandler {
+        dismissUnlockActivity()
+      }
+
       QuranMemorizerTheme(darkTheme = true) {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -59,24 +73,35 @@ class UnlockAyahActivity : ComponentActivity() {
   }
 
   private fun configureShowOnLockScreen() {
+    window.addFlags(
+      WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+      WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
+    )
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
       setShowWhenLocked(true)
       setTurnScreenOn(true)
-      val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-      keyguardManager.requestDismissKeyguard(this, null)
+      val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
+      keyguardManager?.requestDismissKeyguard(this, null)
     } else {
       @Suppress("DEPRECATION")
       window.addFlags(
         WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
           WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
-          WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-          WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+          WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
       )
     }
   }
 
   private fun dismissUnlockActivity() {
+    viewModel.pauseAudio()
+    moveTaskToBack(true)
     finishAndRemoveTask()
-    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+    overridePendingTransition(0, android.R.anim.fade_out)
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+    viewModel.pauseAudio()
   }
 }

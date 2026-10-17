@@ -225,6 +225,10 @@ class QuranViewModel(application: Application) : AndroidViewModel(application) {
     }
   }
 
+  fun pauseAudio() {
+    audioPlayer.pause()
+  }
+
   fun replayAudio() {
     audioPlayer.replay()
   }

@@ -106,4 +106,65 @@ class ExampleRobolectricTest {
     assertEquals(3, multiSettings?.versesCount)
     assertEquals(2, multiSettings?.verseJumpStep)
   }
+
+  @Test
+  fun `test corrupt dummy bismillah cleanup`() = runBlocking {
+    val quranDao = database.quranDao()
+    // Insert valid ayah 1:1
+    quranDao.insertAyah(
+      AyahEntity(
+        id = 1,
+        surahNumber = 1,
+        surahNameArabic = "الفاتحة",
+        surahNameEnglish = "Al-Fatihah",
+        ayahNumberInSurah = 1,
+        juzNumber = 1,
+        textArabic = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        textEnglish = "In the name of Allah",
+        textTransliteration = "Bismillah",
+        audioUrl = ""
+      )
+    )
+
+    // Insert corrupt dummy ayah at 2:6
+    quranDao.insertAyah(
+      AyahEntity(
+        id = 13,
+        surahNumber = 2,
+        surahNameArabic = "البقرة",
+        surahNameEnglish = "Al-Baqarah",
+        ayahNumberInSurah = 6,
+        juzNumber = 1,
+        textArabic = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+        textEnglish = "Corrupted dummy text",
+        textTransliteration = "Bismillah",
+        audioUrl = ""
+      )
+    )
+
+    assertEquals(2, quranDao.getAyahsCount())
+
+    // Run deleteCorruptedAyahs
+    quranDao.deleteCorruptedAyahs()
+
+    // 1:1 should still be present, while 2:6 should be purged
+    val ayah1 = quranDao.getAyahByIdSync(1)
+    val ayah13 = quranDao.getAyahByIdSync(13)
+    assertNotNull(ayah1)
+    assertTrue("Corrupt ayah at 2:6 should be purged", ayah13 == null)
+  }
+
+  @Test
+  fun `test multi-verse distinct text without duplicate bismillah`() = runBlocking {
+    val quranDao = database.quranDao()
+    quranDao.insertAyahs(QuranSeedData.initialAyahs)
+
+    // Range of 5 verses in Al-Baqarah (2:1 to 2:5)
+    val verses = quranDao.getAyahsRangeSync(8, 12)
+    assertEquals(5, verses.size)
+
+    // Ensure all 5 verses have distinct Arabic text and none are empty
+    val distinctTexts = verses.map { it.textArabic.trim() }.distinct()
+    assertEquals("All 5 verses must have unique authentic text", 5, distinctTexts.size)
+  }
 }

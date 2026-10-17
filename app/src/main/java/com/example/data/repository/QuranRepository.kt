@@ -10,9 +10,11 @@ import com.example.data.local.SettingsDao
 import com.example.data.local.UserSettingsEntity
 import com.example.data.model.QuranSurahDirectory
 import com.example.data.remote.QuranApiService
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class QuranRepository(
@@ -28,13 +30,37 @@ class QuranRepository(
   val allAyahs: Flow<List<AyahEntity>> = quranDao.getAllAyahs()
 
   suspend fun ensureInitialized() = withContext(Dispatchers.IO) {
+    try {
+      // 1. Purge any corrupted dummy bismillah records that were mistakenly inserted previously
+      quranDao.deleteCorruptedAyahs()
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
+
     val count = quranDao.getAyahsCount()
-    if (count == 0) {
+    if (count < QuranSeedData.initialAyahs.size) {
       quranDao.insertAyahs(QuranSeedData.initialAyahs)
     }
     val settings = settingsDao.getSettingsSync()
     if (settings == null) {
       settingsDao.saveSettings(UserSettingsEntity())
+    }
+
+    // Prefetch Surah 1 & 2 in background so user has full text immediately
+    val currentAyah = settings?.currentAyahId ?: 1
+    val currentSurah = QuranSurahDirectory.surahs.lastOrNull { it.startAyahGlobalId <= currentAyah }?.number ?: 1
+    prefetchSurahs(setOf(1, 2, currentSurah))
+  }
+
+  fun prefetchSurahs(surahNumbers: Set<Int>) {
+    CoroutineScope(Dispatchers.IO).launch {
+      for (num in surahNumbers) {
+        val count = quranDao.getAyahsCountForSurah(num)
+        val info = QuranSurahDirectory.getSurahByNumber(num)
+        if (info != null && count < info.numberOfAyahs) {
+          downloadSurahOnline(num)
+        }
+      }
     }
   }
 
@@ -142,17 +168,48 @@ class QuranRepository(
     settingsDao.setVerseJumpStep(clampedStep)
   }
 
+  private fun isValidAyah(ayah: AyahEntity): Boolean {
+    // If it has corrupted dummy placeholder text that isn't true Bismillah
+    if (ayah.textArabic.trim() == "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ") {
+      return (ayah.surahNumber == 1 && ayah.ayahNumberInSurah == 1) ||
+             (ayah.surahNumber == 27 && ayah.ayahNumberInSurah == 30)
+    }
+    return ayah.textArabic.isNotBlank()
+  }
+
   suspend fun getAyahsBlock(startAyahId: Int, count: Int): List<AyahEntity> = withContext(Dispatchers.IO) {
-    val result = mutableListOf<AyahEntity>()
     val safeCount = count.coerceIn(1, 10)
-    for (i in 0 until safeCount) {
-      val targetId = (startAyahId + i).coerceAtMost(6236)
-      val ayah = getAyahByIdSync(targetId) ?: getAyahOrFallback(targetId)
-      if (ayah != null && !result.any { it.id == ayah.id }) {
-        result.add(ayah)
+    val neededIds = (0 until safeCount).map { (startAyahId + it).coerceAtMost(6236) }.distinct()
+
+    // Query existing ayahs from database
+    val existing = quranDao.getAyahsRangeSync(neededIds.first(), neededIds.last())
+      .filter { neededIds.contains(it.id) && isValidAyah(it) }
+
+    // If any are missing or corrupted, identify the required surahs and download them online
+    val missingIds = neededIds.filter { id -> existing.none { it.id == id } }
+    if (missingIds.isNotEmpty()) {
+      val surahsToFetch = missingIds.mapNotNull { id ->
+        QuranSurahDirectory.surahs.lastOrNull { it.startAyahGlobalId <= id }?.number
+      }.distinct()
+
+      for (surahNum in surahsToFetch) {
+        downloadSurahOnline(surahNum)
       }
     }
-    result
+
+    // Re-query from database after fetch
+    val updated = quranDao.getAyahsRangeSync(neededIds.first(), neededIds.last())
+      .filter { neededIds.contains(it.id) && isValidAyah(it) }
+      .sortedBy { it.id }
+
+    if (updated.isNotEmpty()) {
+      return@withContext updated
+    }
+
+    // Fallback if network was offline
+    neededIds.mapNotNull { id ->
+      QuranSeedData.initialAyahs.find { it.id == id } ?: getAyahOrFallback(id)
+    }
   }
 
   suspend fun recordUnlockTriggered() = withContext(Dispatchers.IO) {
@@ -178,28 +235,44 @@ class QuranRepository(
   }
 
   suspend fun getAyahOrFallback(id: Int): AyahEntity? = withContext(Dispatchers.IO) {
-    var ayah = quranDao.getAyahByIdSync(id)
-    if (ayah == null) {
-      // Find which surah this ID belongs to
-      val surahInfo = QuranSurahDirectory.surahs.lastOrNull { it.startAyahGlobalId <= id }
-        ?: QuranSurahDirectory.surahs.first()
-      val offset = (id - surahInfo.startAyahGlobalId) + 1
-      val reciter = settingsDao.getSettingsSync()?.selectedReciter ?: "Husary_128kbps"
-      ayah = AyahEntity(
-        id = id,
-        surahNumber = surahInfo.number,
-        surahNameArabic = surahInfo.nameArabic,
-        surahNameEnglish = surahInfo.nameEnglish,
-        ayahNumberInSurah = offset.coerceAtLeast(1),
-        juzNumber = 1,
-        textArabic = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
-        textEnglish = "Ayah $offset of Surah ${surahInfo.nameEnglish}",
-        textTransliteration = "Ayah $offset",
-        audioUrl = QuranSeedData.formatAudioUrl(surahInfo.number, offset.coerceAtLeast(1), reciter)
-      )
-      quranDao.insertAyah(ayah)
+    val local = quranDao.getAyahByIdSync(id)
+    if (local != null && isValidAyah(local)) {
+      return@withContext local
     }
-    ayah
+
+    val seed = QuranSeedData.initialAyahs.find { it.id == id }
+    if (seed != null) {
+      quranDao.insertAyah(seed)
+      return@withContext seed
+    }
+
+    val surahInfo = QuranSurahDirectory.surahs.lastOrNull { it.startAyahGlobalId <= id }
+      ?: QuranSurahDirectory.surahs.first()
+
+    // Try downloading the surah
+    val success = downloadSurahOnline(surahInfo.number)
+    if (success) {
+      val fetched = quranDao.getAyahByIdSync(id)
+      if (fetched != null && isValidAyah(fetched)) {
+        return@withContext fetched
+      }
+    }
+
+    // Offline safe representation (do NOT pollute the database with duplicate dummy Bismillah)
+    val offset = (id - surahInfo.startAyahGlobalId) + 1
+    val reciter = settingsDao.getSettingsSync()?.selectedReciter ?: "Husary_128kbps"
+    AyahEntity(
+      id = id,
+      surahNumber = surahInfo.number,
+      surahNameArabic = surahInfo.nameArabic,
+      surahNameEnglish = surahInfo.nameEnglish,
+      ayahNumberInSurah = offset.coerceAtLeast(1),
+      juzNumber = 1,
+      textArabic = "﴿ سورة ${surahInfo.nameArabic} - آية $offset ﴾",
+      textEnglish = "Ayah $offset of Surah ${surahInfo.nameEnglish}",
+      textTransliteration = "Surah ${surahInfo.nameEnglish} : Ayah $offset",
+      audioUrl = QuranSeedData.formatAudioUrl(surahInfo.number, offset.coerceAtLeast(1), reciter)
+    )
   }
 
   /**

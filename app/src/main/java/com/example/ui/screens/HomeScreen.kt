@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Numbers
@@ -318,6 +319,73 @@ private fun HeroLaunchCard(
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium
           )
+        }
+
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val hasOverlayPermission = remember {
+          if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            android.provider.Settings.canDrawOverlays(context)
+          } else {
+            true
+          }
+        }
+
+        if (!hasOverlayPermission) {
+          Spacer(modifier = Modifier.height(10.dp))
+          Surface(
+            onClick = {
+              if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                val intent = android.content.Intent(
+                  android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                  android.net.Uri.parse("package:${context.packageName}")
+                )
+                context.startActivity(intent)
+              }
+            },
+            shape = RoundedCornerShape(12.dp),
+            color = Color(0xFF332008),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFB74D).copy(alpha = 0.5f))
+          ) {
+            Row(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+              ) {
+                Icon(
+                  imageVector = Icons.Default.Info,
+                  contentDescription = null,
+                  tint = Color(0xFFFFB74D),
+                  modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                  Text(
+                    text = "Enable Auto-Popup on Unlock",
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                  )
+                  Text(
+                    text = "Tap to grant 'Display over other apps' permission",
+                    color = Color(0xFFFFE0B2),
+                    fontSize = 10.sp
+                  )
+                }
+              }
+              Text(
+                text = "Grant",
+                color = Color(0xFFFFB74D),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+              )
+            }
+          }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

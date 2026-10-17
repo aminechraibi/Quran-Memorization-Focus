@@ -85,11 +85,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun QuranAppContent(viewModel: QuranViewModel) {
+  val context = androidx.compose.ui.platform.LocalContext.current
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
   val allAyahs by (viewModel.getApplication<QuranApplication>()).repository.allAyahs.collectAsStateWithLifecycle(initialValue = emptyList())
 
   var currentTab by remember { mutableIntStateOf(0) }
-  var isTestModeActive by remember { mutableStateOf(false) }
   val snackbarHostState = remember { SnackbarHostState() }
 
   // Request notification permission on Android 13+
@@ -111,13 +111,16 @@ fun QuranAppContent(viewModel: QuranViewModel) {
     }
   }
 
-  // Back handling when not on Home screen or when test mode is open
-  BackHandler(enabled = isTestModeActive || currentTab != 0) {
-    if (isTestModeActive) {
-      isTestModeActive = false
-    } else {
-      currentTab = 0
+  // Back handling when not on Home screen
+  BackHandler(enabled = currentTab != 0) {
+    currentTab = 0
+  }
+
+  val launchUnlockScreen = {
+    val intent = Intent(context, UnlockAyahActivity::class.java).apply {
+      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
+    context.startActivity(intent)
   }
 
   Box(modifier = Modifier.fillMaxSize()) {
@@ -125,25 +128,23 @@ fun QuranAppContent(viewModel: QuranViewModel) {
       modifier = Modifier.fillMaxSize(),
       snackbarHost = { SnackbarHost(snackbarHostState) },
       bottomBar = {
-        if (!isTestModeActive) {
-          NavigationBar(
-            modifier = Modifier.testTag("main_navigation_bar")
-          ) {
-            val tabs = listOf(AppTab.Home, AppTab.Surahs, AppTab.Progress, AppTab.Settings)
-            tabs.forEach { tab ->
-              NavigationBarItem(
-                selected = currentTab == tab.index,
-                onClick = { currentTab = tab.index },
-                icon = { Icon(tab.icon, contentDescription = tab.title) },
-                label = { Text(tab.title, fontSize = 11.sp) },
-                modifier = Modifier.testTag("nav_tab_${tab.title.lowercase()}"),
-                colors = NavigationBarItemDefaults.colors(
-                  selectedIconColor = EmeraldPrimary,
-                  selectedTextColor = EmeraldPrimary,
-                  indicatorColor = EmeraldPrimary.copy(alpha = 0.15f)
-                )
+        NavigationBar(
+          modifier = Modifier.testTag("main_navigation_bar")
+        ) {
+          val tabs = listOf(AppTab.Home, AppTab.Surahs, AppTab.Progress, AppTab.Settings)
+          tabs.forEach { tab ->
+            NavigationBarItem(
+              selected = currentTab == tab.index,
+              onClick = { currentTab = tab.index },
+              icon = { Icon(tab.icon, contentDescription = tab.title) },
+              label = { Text(tab.title, fontSize = 11.sp) },
+              modifier = Modifier.testTag("nav_tab_${tab.title.lowercase()}"),
+              colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = EmeraldPrimary,
+                selectedTextColor = EmeraldPrimary,
+                indicatorColor = EmeraldPrimary.copy(alpha = 0.15f)
               )
-            }
+            )
           }
         }
       }
@@ -152,7 +153,7 @@ fun QuranAppContent(viewModel: QuranViewModel) {
         when (currentTab) {
           0 -> HomeScreen(
             uiState = uiState,
-            onLaunchTestUnlock = { isTestModeActive = true },
+            onLaunchTestUnlock = launchUnlockScreen,
             onSelectSurahAndAyah = { surah, ayah -> viewModel.selectSurahAndAyah(surah, ayah) },
             onUnlockEnabledChanged = { viewModel.setUnlockEnabled(it) },
             onCooldownChanged = { viewModel.setCooldownMinutes(it) },
@@ -205,45 +206,10 @@ fun QuranAppContent(viewModel: QuranViewModel) {
             onVerseJumpStepChanged = { viewModel.setVerseJumpStep(it) },
             onClearCache = { viewModel.clearAudioCache() },
             onRefreshCache = { viewModel.refreshCacheInfo() },
-            onLaunchTestUnlock = { isTestModeActive = true }
+            onLaunchTestUnlock = launchUnlockScreen
           )
         }
       }
-    }
-
-    // Full-Screen Interactive Test Mode Overlay
-    AnimatedVisibility(
-      visible = isTestModeActive,
-      enter = fadeIn() + slideInVertically { it },
-      exit = fadeOut() + slideOutVertically { it }
-    ) {
-      MemorizeUnlockScreen(
-        ayah = uiState.currentAyah,
-        ayahs = uiState.currentAyahs,
-        settings = uiState.settings,
-        audioState = uiState.audioState,
-        isTestMode = true,
-        onFontSizeChanged = { viewModel.setArabicFontSize(it) },
-        onCycleAudioSpeed = { viewModel.cycleAudioSpeed() },
-        onIncrementRepetition = { viewModel.incrementCurrentAyahRepetition() },
-        onDecrementRepetition = { viewModel.decrementCurrentAyahRepetition() },
-        onDoneClicked = {
-          viewModel.onDoneClicked {
-            isTestModeActive = false
-          }
-        },
-        onRepeatClicked = {
-          viewModel.onRepeatClicked {
-            isTestModeActive = false
-          }
-        },
-        onPreviousClicked = { viewModel.previousAyah() },
-        onNextClicked = { viewModel.nextAyah() },
-        onToggleAudio = { viewModel.toggleAudioPlayback() },
-        onReplayAudio = { viewModel.replayAudio() },
-        onSeekAudio = { viewModel.seekAudio(it) },
-        onDismiss = { isTestModeActive = false }
-      )
     }
   }
 }

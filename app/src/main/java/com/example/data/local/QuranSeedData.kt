@@ -95,7 +95,7 @@ object QuranSeedData {
       audioUrl = formatAudioUrl(1, 7)
     ),
 
-    // Surah Al-Baqarah (2:1 - 2:5)
+    // Surah Al-Baqarah (2:1 - 2:20)
     AyahEntity(
       id = 8,
       surahNumber = 2,
@@ -156,6 +156,126 @@ object QuranSeedData {
       textTransliteration = "Ulā'ika 'alā hudam-mir-Rabbihim wa ulā'ika humul-mufliḥūn",
       audioUrl = formatAudioUrl(2, 5)
     ),
+    AyahEntity(
+      id = 13,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 6,
+      juzNumber = 1,
+      textArabic = "إِنَّ ٱلَّذِينَ كَفَرُوا۟ سَوَآءٌ عَلَيْهِمْ ءَأَنذَرْتَهُمْ أَمْ لَمْ تُنذِرْهُمْ لَا يُؤْمِنُونَ",
+      textEnglish = "Indeed, those who disbelieve - it is all the same for them whether you warn them or do not warn them - they will not believe.",
+      textTransliteration = "Innal-ladhīna kafarū sawā'un 'alayhim a'andhartahum am lam tundhirhum lā yu'minūn",
+      audioUrl = formatAudioUrl(2, 6)
+    ),
+    AyahEntity(
+      id = 14,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 7,
+      juzNumber = 1,
+      textArabic = "خَتَمَ ٱللَّهُ عَلَىٰ قُلُوبِهِمْ وَعَلَىٰ سَمْعِهِمْ ۖ وَعَلَىٰٓ أَبْصَـٰرِهِمْ غِشَـٰوَةٌ ۖ وَلَهُمْ عَذَابٌ عَظِيمٌ",
+      textEnglish = "Allah has set a seal upon their hearts and upon their hearing, and over their vision is a veil. And for them is a great punishment.",
+      textTransliteration = "Khatamal-Lāhu 'alā qulūbihim wa 'alā sam'ihim wa 'alā abṣārihim ghishāwah wa lahum 'adhābun 'aẓīm",
+      audioUrl = formatAudioUrl(2, 7)
+    ),
+    AyahEntity(
+      id = 15,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 8,
+      juzNumber = 1,
+      textArabic = "وَمِنَ ٱلنَّاسِ مَن يَقُولُ ءَامَنَّا بِٱللَّهِ وَبِٱلْيَوْمِ ٱلْـَٔاخِرِ وَمَا هُم بِمُؤْمِنِينَ",
+      textEnglish = "And of the people are some who say, \"We believe in Allah and the Last Day,\" but they are not believers.",
+      textTransliteration = "Wa minan-nāsi may-yaqūlu āmannā bil-Lāhi wa bil-yawmil-ākhiri wa mā hum bi-mu'minīn",
+      audioUrl = formatAudioUrl(2, 8)
+    ),
+    AyahEntity(
+      id = 16,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 9,
+      juzNumber = 1,
+      textArabic = "يُخَـٰدِعُونَ ٱللَّهَ وَٱلَّذِينَ ءَامَنُوا۟ وَمَا يَخْدَعُونَ إِلَّآ أَنفُسَهُمْ وَمَا يَشْعُرُونَ",
+      textEnglish = "They deceive Allah and those who believe, but they deceive not except themselves and perceive [it] not.",
+      textTransliteration = "Yukhādi'ūnal-Lāha wal-ladhīna āmanū wa mā yakhda'ūna illā anfusahum wa mā yash'urūn",
+      audioUrl = formatAudioUrl(2, 9)
+    ),
+    AyahEntity(
+      id = 17,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 10,
+      juzNumber = 1,
+      textArabic = "فِى قُلُوبِهِم مَّرَضٌ فَزَادَهُمُ ٱللَّهُ مَرَضًا ۖ وَلَهُمْ عَذَابٌ أَلِيمٌۢ بِمَا كَانُوا۟ يَكْذِبُونَ",
+      textEnglish = "In their hearts is disease, so Allah has increased their disease; and for them is a painful punishment because they [habitually] used to lie.",
+      textTransliteration = "Fī qulūbihim maraḍun fazādahumul-Lāhu maraḍā, wa lahum 'adhābun alīmum bimā kānū yakdhibūn",
+      audioUrl = formatAudioUrl(2, 10)
+    ),
+    AyahEntity(
+      id = 18,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 11,
+      juzNumber = 1,
+      textArabic = "وَإِذَا قِيلَ لَهُمْ لَا تُفْسِدُوا۟ فِى ٱلْأَرْضِ قَالُوٓا۟ إِنَّمَا نَحْنُ مُصْلِحُونَ",
+      textEnglish = "And when it is said to them, \"Do not cause corruption on the earth,\" they say, \"We are but reformers.\"",
+      textTransliteration = "Wa idhā qīla lahum lā tufsidū fil-arḍi qālū innamā naḥnu muṣliḥūn",
+      audioUrl = formatAudioUrl(2, 11)
+    ),
+    AyahEntity(
+      id = 19,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 12,
+      juzNumber = 1,
+      textArabic = "أَلَآ إِنَّهُمْ هُمُ ٱلْمُفْسِدُونَ وَلَـٰكِن لَّا يَشْعُرُونَ",
+      textEnglish = "Unquestionably, it is they who are the corrupters, but they perceive [it] not.",
+      textTransliteration = "Alā innahum humul-mufsidūna wa lākil lā yash'urūn",
+      audioUrl = formatAudioUrl(2, 12)
+    ),
+    AyahEntity(
+      id = 20,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 13,
+      juzNumber = 1,
+      textArabic = "وَإِذَا قِيلَ لَهُمْ ءَامِنُوا۟ كَمَآ ءَامَنَ ٱلنَّاسُ قَالُوٓا۟ أَنُؤْمِنُ كَمَآ ءَامَنَ ٱلسُّفَهَآءُ ۗ أَلَآ إِنَّهُمْ هُمُ ٱلسُّفَهَآءُ وَلَـٰكِن لَّا يَعْلَمُونَ",
+      textEnglish = "And when it is said to them, \"Believe as the people have believed,\" they say, \"Should we believe as the foolish have believed?\" Unquestionably, it is they who are the foolish, but they know [it] not.",
+      textTransliteration = "Wa idhā qīla lahum āminū kamā āmanan-nāsu qālū anu'minu kamā āmanas-sufahā', alā innahum humus-sufahā'u wa lākil lā ya'lamūn",
+      audioUrl = formatAudioUrl(2, 13)
+    ),
+    AyahEntity(
+      id = 21,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 14,
+      juzNumber = 1,
+      textArabic = "وَإِذَا لَقُوا۟ ٱلَّذِينَ ءَامَنُوا۟ قَالُوٓا۟ ءَامَنَّا وَإِذَا خَلَوْا۟ إِلَىٰ شَيَـٰطِينِهِمْ قَالُوٓا۟ إِنَّا مَعَكُمْ إِنَّمَا نَحْنُ مُسْتَهْزِءُونَ",
+      textEnglish = "And when they meet those who believe, they say, \"We believe\"; but when they are alone with their evil ones, they say, \"Indeed, we are with you; we were only mockers.\"",
+      textTransliteration = "Wa idhā laqul-ladhīna āmanū qālū āmannā wa idhā khalaw ilā shayāṭīnihim qālū innā ma'akum innamā naḥnu mustahzi'ūn",
+      audioUrl = formatAudioUrl(2, 14)
+    ),
+    AyahEntity(
+      id = 22,
+      surahNumber = 2,
+      surahNameArabic = "البقرة",
+      surahNameEnglish = "Al-Baqarah",
+      ayahNumberInSurah = 15,
+      juzNumber = 1,
+      textArabic = "ٱللَّهُ يَسْتَهْزِئُ بِهِمْ وَيَمُدُّهُمْ فِى طُغْيَـٰنِهِمْ يَعْمَهُونَ",
+      textEnglish = "[But] Allah mocks them and prolongs them in their transgression [while] they wander blindly.",
+      textTransliteration = "Allāhu yastahzi'u bihim wa yamudduhum fī ṭughyānihim ya'mahūn",
+      audioUrl = formatAudioUrl(2, 15)
+    ),
 
     // Ayat Al-Kursi (2:255) - ID: 262
     AyahEntity(
@@ -171,7 +291,7 @@ object QuranSeedData {
       audioUrl = formatAudioUrl(2, 255)
     ),
 
-    // Surah Al-Mulk (67:1 - 67:5)
+    // Surah Al-Mulk (67:1 - 67:10)
     AyahEntity(
       id = 5242,
       surahNumber = 67,
@@ -232,67 +352,65 @@ object QuranSeedData {
       textTransliteration = "Wa laqad zayyannās-samā'ad-dunyā bimaṣābīḥa wa ja'alnāhā rujūmal-lish-shayāṭīn, wa a'tadnā lahum 'adhābas-sa'īr",
       audioUrl = formatAudioUrl(67, 5)
     ),
-
-    // Surah An-Naba (78:1 - 78:5)
     AyahEntity(
-      id = 5673,
-      surahNumber = 78,
-      surahNameArabic = "النبأ",
-      surahNameEnglish = "An-Naba",
-      ayahNumberInSurah = 1,
-      juzNumber = 30,
-      textArabic = "عَمَّ يَتَسَآءَلُونَ",
-      textEnglish = "About what are they asking one another?",
-      textTransliteration = "'Amma yatasā'alūn",
-      audioUrl = formatAudioUrl(78, 1)
+      id = 5247,
+      surahNumber = 67,
+      surahNameArabic = "الملك",
+      surahNameEnglish = "Al-Mulk",
+      ayahNumberInSurah = 6,
+      juzNumber = 29,
+      textArabic = "وَلِلَّذِينَ كَفَرُوا۟ بِرَبِّهِمْ عَذَابُ جَهَنَّمَ ۖ وَبِئْسَ ٱلْمَصِيرُ",
+      textEnglish = "And for those who disbelieved in their Lord is the punishment of Hell, and wretched is the destination.",
+      textTransliteration = "Wa lilladhīna kafarū bi-Rabbihim 'adhābu jahannama wa bi'sal-maṣīr",
+      audioUrl = formatAudioUrl(67, 6)
     ),
     AyahEntity(
-      id = 5674,
-      surahNumber = 78,
-      surahNameArabic = "النبأ",
-      surahNameEnglish = "An-Naba",
-      ayahNumberInSurah = 2,
-      juzNumber = 30,
-      textArabic = "عَنِ ٱلنَّبَإِ ٱلْعَظِيمِ",
-      textEnglish = "About the great news -",
-      textTransliteration = "'Anin-naba'il-'aẓīm",
-      audioUrl = formatAudioUrl(78, 2)
+      id = 5248,
+      surahNumber = 67,
+      surahNameArabic = "الملك",
+      surahNameEnglish = "Al-Mulk",
+      ayahNumberInSurah = 7,
+      juzNumber = 29,
+      textArabic = "إِذَآ أُلْقُوا۟ فِيهَا سَمِعُوا۟ لَهَا شَهِيقًا وَهِىَ تَفُورُ",
+      textEnglish = "When they are thrown into it, they hear from it a dreadful inhaling while it boils up.",
+      textTransliteration = "Idhā ulqū fīhā sami'ū lahā shahīqaw-wa hiya tafūr",
+      audioUrl = formatAudioUrl(67, 7)
     ),
     AyahEntity(
-      id = 5675,
-      surahNumber = 78,
-      surahNameArabic = "النبأ",
-      surahNameEnglish = "An-Naba",
-      ayahNumberInSurah = 3,
-      juzNumber = 30,
-      textArabic = "ٱلَّذِى هُمْ فِيهِ مُخْتَلِفُونَ",
-      textEnglish = "That over which they are in disagreement.",
-      textTransliteration = "Alladhī hum fīhi mukhtalifūn",
-      audioUrl = formatAudioUrl(78, 3)
+      id = 5249,
+      surahNumber = 67,
+      surahNameArabic = "الملك",
+      surahNameEnglish = "Al-Mulk",
+      ayahNumberInSurah = 8,
+      juzNumber = 29,
+      textArabic = "تَكَادُ تَمَيَّزُ مِنَ ٱلْغَيْظِ ۖ كُلَّمَآ أُلْقِىَ فِيهَا فَوْجٌ سَأَلَهُمْ خَزَنَتُهَآ أَلَمْ يَأْتِكُمْ نَذِيرٌ",
+      textEnglish = "It almost bursts with rage. Every time a company is thrown into it, its keepers ask them, \"Did there not come to you a warner?\"",
+      textTransliteration = "Takādu tamayyazu minal-ghayẓ, kullamā ulqiya fīhā fawjun sa'alahum khazanatuhā alam ya'tikum nadhīr",
+      audioUrl = formatAudioUrl(67, 8)
     ),
     AyahEntity(
-      id = 5676,
-      surahNumber = 78,
-      surahNameArabic = "النبأ",
-      surahNameEnglish = "An-Naba",
-      ayahNumberInSurah = 4,
-      juzNumber = 30,
-      textArabic = "كَلَّا سَيَعْلَمُونَ",
-      textEnglish = "No! They are going to know.",
-      textTransliteration = "Kallā saya'lamūn",
-      audioUrl = formatAudioUrl(78, 4)
+      id = 5250,
+      surahNumber = 67,
+      surahNameArabic = "الملك",
+      surahNameEnglish = "Al-Mulk",
+      ayahNumberInSurah = 9,
+      juzNumber = 29,
+      textArabic = "قَالُوا۟ بَلَىٰ قَدْ جَآءَنَا نَذِيرٌ فَكَذَّبْنَا وَقُلْنَا مَا نَزَّلَ ٱللَّهُ مِن شَىْءٍ إِنْ أَنتُمْ إِلَّا فِى ضَلَـٰلٍ كَبِيرٍ",
+      textEnglish = "They will say, \"Yes, a warner had come to us, but we denied and said, 'Allah has not sent down anything. You are not except in great error.'\"",
+      textTransliteration = "Qālū balā qad jā'anā nadhīrun fakadh-dhabnā wa qulnā mā nazzalal-Lāhu min shay'in in antum illā fī ḍalālin kabīr",
+      audioUrl = formatAudioUrl(67, 9)
     ),
     AyahEntity(
-      id = 5677,
-      surahNumber = 78,
-      surahNameArabic = "النبأ",
-      surahNameEnglish = "An-Naba",
-      ayahNumberInSurah = 5,
-      juzNumber = 30,
-      textArabic = "ثُمَّ كَلَّا سَيَعْلَمُونَ",
-      textEnglish = "Then, no! They are going to know.",
-      textTransliteration = "Thumma kallā saya'lamūn",
-      audioUrl = formatAudioUrl(78, 5)
+      id = 5251,
+      surahNumber = 67,
+      surahNameArabic = "الملك",
+      surahNameEnglish = "Al-Mulk",
+      ayahNumberInSurah = 10,
+      juzNumber = 29,
+      textArabic = "وَقَالُوا۟ لَوْ كُنَّا نَسْمَعُ أَوْ نَعْقِلُ مَا كُنَّا فِىٓ أَصْحَـٰبِ ٱلسَّعِيرِ",
+      textEnglish = "And they will say, \"If only we had been listening or reasoning, we would not be among the companions of the Blaze.\"",
+      textTransliteration = "Wa qālū law kunnā nasma'u aw na'qilu mā kunnā fī aṣ-ḥābis-sa'īr",
+      audioUrl = formatAudioUrl(67, 10)
     ),
 
     // Surah Al-Asr (103:1 - 103:3) - Complete
@@ -369,6 +487,180 @@ object QuranSeedData {
       textEnglish = "Indeed, your enemy is the one cut off.",
       textTransliteration = "Inna shāni'aka huwal-abtar",
       audioUrl = formatAudioUrl(108, 3)
+    ),
+
+    // Surah Al-Kafirun (109:1 - 109:6) - Complete
+    AyahEntity(
+      id = 6208,
+      surahNumber = 109,
+      surahNameArabic = "الكافرون",
+      surahNameEnglish = "Al-Kafirun",
+      ayahNumberInSurah = 1,
+      juzNumber = 30,
+      textArabic = "قُلْ يَـٰٓأَيُّهَا ٱلْكَـٰفِرُونَ",
+      textEnglish = "Say, \"O disbelievers,\"",
+      textTransliteration = "Qul yā ayyuhal-kāfirūn",
+      audioUrl = formatAudioUrl(109, 1)
+    ),
+    AyahEntity(
+      id = 6209,
+      surahNumber = 109,
+      surahNameArabic = "الكافرون",
+      surahNameEnglish = "Al-Kafirun",
+      ayahNumberInSurah = 2,
+      juzNumber = 30,
+      textArabic = "لَآ أَعْبُدُ مَا تَعْبُدُونَ",
+      textEnglish = "\"I do not worship what you worship.\"",
+      textTransliteration = "Lā a'budu mā ta'budūn",
+      audioUrl = formatAudioUrl(109, 2)
+    ),
+    AyahEntity(
+      id = 6210,
+      surahNumber = 109,
+      surahNameArabic = "الكافرون",
+      surahNameEnglish = "Al-Kafirun",
+      ayahNumberInSurah = 3,
+      juzNumber = 30,
+      textArabic = "وَلَآ أَنتُمْ عَـٰبِدُونَ مَآ أَعْبُدُ",
+      textEnglish = "\"Nor are you worshippers of what I worship.\"",
+      textTransliteration = "Wa lā antum 'ābidūna mā a'bud",
+      audioUrl = formatAudioUrl(109, 3)
+    ),
+    AyahEntity(
+      id = 6211,
+      surahNumber = 109,
+      surahNameArabic = "الكافرون",
+      surahNameEnglish = "Al-Kafirun",
+      ayahNumberInSurah = 4,
+      juzNumber = 30,
+      textArabic = "وَلَآ أَنَا۠ عَابِدٌ مَّا عَبَدتُّمْ",
+      textEnglish = "\"Nor will I be a worshipper of what you worship.\"",
+      textTransliteration = "Wa lā ana 'ābidum mā 'abattum",
+      audioUrl = formatAudioUrl(109, 4)
+    ),
+    AyahEntity(
+      id = 6212,
+      surahNumber = 109,
+      surahNameArabic = "الكافرون",
+      surahNameEnglish = "Al-Kafirun",
+      ayahNumberInSurah = 5,
+      juzNumber = 30,
+      textArabic = "وَلَآ أَنتُمْ عَـٰبِدُونَ مَآ أَعْبُدُ",
+      textEnglish = "\"Nor will you be worshippers of what I worship.\"",
+      textTransliteration = "Wa lā antum 'ābidūna mā a'bud",
+      audioUrl = formatAudioUrl(109, 5)
+    ),
+    AyahEntity(
+      id = 6213,
+      surahNumber = 109,
+      surahNameArabic = "الكافرون",
+      surahNameEnglish = "Al-Kafirun",
+      ayahNumberInSurah = 6,
+      juzNumber = 30,
+      textArabic = "لَكُمْ دِينُكُمْ وَلِىَ دِينِ",
+      textEnglish = "\"For you is your religion, and for me is my religion.\"",
+      textTransliteration = "Lakum dīnukum wa liya dīn",
+      audioUrl = formatAudioUrl(109, 6)
+    ),
+
+    // Surah An-Nasr (110:1 - 110:3) - Complete
+    AyahEntity(
+      id = 6214,
+      surahNumber = 110,
+      surahNameArabic = "النصر",
+      surahNameEnglish = "An-Nasr",
+      ayahNumberInSurah = 1,
+      juzNumber = 30,
+      textArabic = "إِذَا جَآءَ نَصْرُ ٱللَّهِ وَٱلْفَتْحُ",
+      textEnglish = "When the victory of Allah has come and the conquest,",
+      textTransliteration = "Idhā jā'a naṣrul-Lāhi wal-fatḥ",
+      audioUrl = formatAudioUrl(110, 1)
+    ),
+    AyahEntity(
+      id = 6215,
+      surahNumber = 110,
+      surahNameArabic = "النصر",
+      surahNameEnglish = "An-Nasr",
+      ayahNumberInSurah = 2,
+      juzNumber = 30,
+      textArabic = "وَرَأَيْتَ ٱلنَّاسَ يَدْخُلُونَ فِى دِينِ ٱللَّهِ أَفْوَاجًا",
+      textEnglish = "And you see the people entering into the religion of Allah in multitudes,",
+      textTransliteration = "Wa ra'aytan-nāsa yadkhulūna fī dīnil-Lāhi afwājā",
+      audioUrl = formatAudioUrl(110, 2)
+    ),
+    AyahEntity(
+      id = 6216,
+      surahNumber = 110,
+      surahNameArabic = "النصر",
+      surahNameEnglish = "An-Nasr",
+      ayahNumberInSurah = 3,
+      juzNumber = 30,
+      textArabic = "فَسَبِّحْ بِحَمْدِ رَبِّكَ وَٱسْتَغْفِرْهُ ۚ إِنَّهُۥ كَانَ تَوَّابًۢا",
+      textEnglish = "Then exalt [Him] with praise of your Lord and ask forgiveness of Him. Indeed, He is ever Accepting of repentance.",
+      textTransliteration = "Fasabbiḥ biḥamdi Rabbika wastaghfirh, innahū kāna Tawwābā",
+      audioUrl = formatAudioUrl(110, 3)
+    ),
+
+    // Surah Al-Masad (111:1 - 111:5) - Complete
+    AyahEntity(
+      id = 6217,
+      surahNumber = 111,
+      surahNameArabic = "المسد",
+      surahNameEnglish = "Al-Masad",
+      ayahNumberInSurah = 1,
+      juzNumber = 30,
+      textArabic = "تَبَّتْ يَدَآ أَبِى لَهَبٍ وَتَبَّ",
+      textEnglish = "May the hands of Abu Lahab be ruined, and ruined is he.",
+      textTransliteration = "Tabbat yadā Abī Lahabiw-wa tabb",
+      audioUrl = formatAudioUrl(111, 1)
+    ),
+    AyahEntity(
+      id = 6218,
+      surahNumber = 111,
+      surahNameArabic = "المسد",
+      surahNameEnglish = "Al-Masad",
+      ayahNumberInSurah = 2,
+      juzNumber = 30,
+      textArabic = "مَآ أَغْنَىٰ عَنْهُ مَالُهُۥ وَمَا كَسَبَ",
+      textEnglish = "His wealth will not avail him or that which he gained.",
+      textTransliteration = "Mā aghnā 'anhu māluhū wa mā kasab",
+      audioUrl = formatAudioUrl(111, 2)
+    ),
+    AyahEntity(
+      id = 6219,
+      surahNumber = 111,
+      surahNameArabic = "المسد",
+      surahNameEnglish = "Al-Masad",
+      ayahNumberInSurah = 3,
+      juzNumber = 30,
+      textArabic = "سَيَصْلَىٰ نَارًا ذَاتَ لَهَبٍ",
+      textEnglish = "He will [enter to] burn in a Fire of [blazing] flame",
+      textTransliteration = "Sayaṣlā nāran dhāta lahab",
+      audioUrl = formatAudioUrl(111, 3)
+    ),
+    AyahEntity(
+      id = 6220,
+      surahNumber = 111,
+      surahNameArabic = "المسد",
+      surahNameEnglish = "Al-Masad",
+      ayahNumberInSurah = 4,
+      juzNumber = 30,
+      textArabic = "وَٱمْرَأَتُهُۥ حَمَّالَةَ ٱلْحَطَبِ",
+      textEnglish = "And his wife [as well] - the carrier of firewood.",
+      textTransliteration = "Wamra'atuhū ḥammālatal-ḥaṭab",
+      audioUrl = formatAudioUrl(111, 4)
+    ),
+    AyahEntity(
+      id = 6221,
+      surahNumber = 111,
+      surahNameArabic = "المسد",
+      surahNameEnglish = "Al-Masad",
+      ayahNumberInSurah = 5,
+      juzNumber = 30,
+      textArabic = "فِى جِيدِهَا حَبْلٌ مِّن مَّسَدٍۭ",
+      textEnglish = "Around her neck is a rope of twisted fiber.",
+      textTransliteration = "Fī jīdihā ḥablum-mim-masad",
+      audioUrl = formatAudioUrl(111, 5)
     ),
 
     // Surah Al-Ikhlas (112:1 - 112:4) - Complete

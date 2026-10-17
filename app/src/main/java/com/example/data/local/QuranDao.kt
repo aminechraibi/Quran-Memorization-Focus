@@ -60,4 +60,10 @@ interface QuranDao {
 
   @Query("UPDATE ayahs SET isCompleted = 0, repetitionCount = 0, lastReviewedTimestamp = 0")
   suspend fun resetAllProgress()
+
+  @Query("DELETE FROM ayahs WHERE textArabic = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ' AND NOT (surahNumber = 1 AND ayahNumberInSurah = 1) AND NOT (surahNumber = 27 AND ayahNumberInSurah = 30)")
+  suspend fun deleteCorruptedAyahs()
+
+  @Query("SELECT COUNT(*) FROM ayahs WHERE surahNumber = :surahNumber")
+  suspend fun getAyahsCountForSurah(surahNumber: Int): Int
 }

@@ -73,16 +73,27 @@ class UnlockMonitorService : Service() {
       val surahLabel = currentAyah?.let { "Surah ${it.surahNameEnglish} : Ayah ${it.ayahNumberInSurah}" }
         ?: "Current Ayah"
 
-      // Check overlay permission
+      // Always attempt to launch the separate UnlockAyahActivity directly on unlock
       val canDrawOverlays = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this@UnlockMonitorService)
+      val unlockIntent = Intent(this@UnlockMonitorService, UnlockAyahActivity::class.java).apply {
+        addFlags(
+          Intent.FLAG_ACTIVITY_NEW_TASK or
+          Intent.FLAG_ACTIVITY_CLEAR_TOP or
+          Intent.FLAG_ACTIVITY_SINGLE_TOP or
+          Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+        )
+      }
 
-      if (canDrawOverlays) {
-        val unlockIntent = Intent(this@UnlockMonitorService, UnlockAyahActivity::class.java).apply {
-          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        }
+      var directStarted = false
+      try {
         startActivity(unlockIntent)
-      } else {
-        // Fallback: Post high-priority full-screen intent notification
+        directStarted = true
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+
+      // If overlay permission is not granted or direct start failed, post high-priority full-screen alert
+      if (!directStarted || !canDrawOverlays) {
         postFullScreenNotification(surahLabel)
       }
     }
